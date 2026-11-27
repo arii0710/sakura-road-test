@@ -244,13 +244,16 @@ recordTab.addEventListener("click", () => {
 
 // ===== 桜並木の表示 =====
 
+let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+
 function showSakuraRoad() {
   const road = document.getElementById("sakuraRoad");
   const monthTitle = document.getElementById("monthTitle");
   const records = JSON.parse(localStorage.getItem("sakuraRecords") || "{}");
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = today.getMonth() + 1;
+  const year = calendarMonth.getFullYear();
+  const month = calendarMonth.getMonth() + 1;
+  const taskStore = getTaskStore();
+  const notes = JSON.parse(localStorage.getItem("sakuraEditDraftNotes") || "{}");
   const daysInMonth = new Date(year, month, 0).getDate();
   const firstWeekday = new Date(year, month - 1, 1).getDay();
 
@@ -277,6 +280,8 @@ function showSakuraRoad() {
   for (let day = 1; day <= daysInMonth; day++) {
     const date = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     const record = records[date];
+    const draftTasks = Array.isArray(taskStore[date]) ? taskStore[date] : [];
+    const hasDraft = draftTasks.some(t => t.done || !t.minimum) || Boolean(notes[date]);
     const rating = record ? normalizeRating(record.rating) : null;
     const flowerText =
       rating === "Excellent"
@@ -291,10 +296,10 @@ function showSakuraRoad() {
     button.type = "button";
     button.className = "calendar-day";
     if (date === getToday()) button.classList.add("calendar-today");
-    if (date > getToday()) button.classList.add("calendar-future");
+    if (date > getToday()) { button.classList.add("calendar-future"); button.disabled = true; }
     button.setAttribute(
       "aria-label",
-      `${month}月${day}日 ${rating || (draftTasks.length ? "入力途中" : "未記録")}`,
+      `${month}月${day}日 ${rating || (hasDraft ? "入力途中" : "未記録")}`,
     );
 
     const number = document.createElement("span");
@@ -302,7 +307,7 @@ function showSakuraRoad() {
     number.textContent = day;
     const flowers = document.createElement("span");
     flowers.className = "calendar-flowers";
-    flowers.textContent = flowerText || (draftTasks.length && draftTasks.some(t => t.done || !t.minimum) ? "✎" : "·");
+    flowers.textContent = flowerText || (hasDraft ? "✎" : "·");
     if (!flowerText) flowers.classList.add("calendar-empty");
     button.append(number, flowers);
 
@@ -310,11 +315,21 @@ function showSakuraRoad() {
       const detail = document.getElementById("dayDetail");
       detail.textContent = record
         ? `${date}｜達成度：${rating}｜目標：${record.goal}`
-        : `${date}｜${draftTasks.length ? "入力途中のタスクあり" : "記録なし"}`;
+        : `${date}｜${hasDraft ? "入力途中の記録あり" : "記録なし"}`;
       openEditForm(date);
     });
     road.appendChild(button);
   }
+}
+
+for (const [id, delta] of [["prevMonth", -1], ["nextMonth", 1]]) {
+  document.getElementById(id).addEventListener("click", () => {
+    calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + delta, 1);
+    editForm.style.display = "none";
+    editingDate = null;
+    document.getElementById("dayDetail").textContent = "日付を選択してください。";
+    showSakuraRoad();
+  });
 }
 
 // ===== 過去の記録の追加・修正 =====
@@ -449,7 +464,7 @@ editGoal.addEventListener("input", () => {
 document.getElementById("saveEdit").addEventListener("click", () => {
   if (!editingDate) return;
 
-  const goal = editGoal.value.trim();
+  const goal = editGoal.value.trim() || getEditingTasks().map(t => t.text).join(" / ");
 
   if (!goal || !editingRating) {
     editStatus.textContent = "目標と達成度を入力してください。";
@@ -489,6 +504,7 @@ document.getElementById("saveEdit").addEventListener("click", () => {
 
   // 今日の記録を編集した場合はホーム画面も更新
   if (editingDate === getToday()) {
+    renderTodayTasks();
     showRecord();
   }
 });

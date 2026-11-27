@@ -637,3 +637,9 @@ html, body {
 #editForm .add-task-row { margin:10px 0 6px; }
 #editForm #editAddTask { min-height:40px; }
 #editDraftStatus { font-size:12px; color:#8b7580; min-height:1em; }
+
+.month-nav {display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.month-nav button {border:1px solid #efd4df;background:#fff5f8;color:#9a6478;border-radius:9px;padding:9px;cursor:pointer;}
+.month-nav p {font-weight:bold;margin:8px 0;}
+.calendar-legend {font-size:12px;color:#8b7580;}
+#recordPage .calendar-future:disabled {cursor:default;}
