@@ -125,7 +125,7 @@ buttons.forEach((button) => {
 
 // 記録を画面に表示
 function showRecord() {
-  const records = JSON.parse(localStorage.getItem("sakuraRecords") || "{}");
+  const records = JSON.parse(localStorage.getItem("sakuraTestRecords") || "{}");
   const todayRecord = records[getToday()];
 
   if (todayRecord) {
@@ -158,7 +158,7 @@ document.getElementById("save").addEventListener("click", () => {
     return;
   }
 
-  const records = JSON.parse(localStorage.getItem("sakuraRecords") || "{}");
+  const records = JSON.parse(localStorage.getItem("sakuraTestRecords") || "{}");
 
   const todayTasks = getTodayTasks();
   const completedCount = todayTasks.filter((t) => t.done).length;
@@ -181,7 +181,7 @@ document.getElementById("save").addEventListener("click", () => {
     })),
   };
 
-  localStorage.setItem("sakuraRecords", JSON.stringify(records));
+  localStorage.setItem("sakuraTestRecords", JSON.stringify(records));
 
   saveStatus.textContent = "🌸 今日の記録を保存しました！";
   showRecord();
@@ -195,12 +195,12 @@ document.getElementById("save").addEventListener("click", () => {
 const motivationDialog = document.getElementById("motivationDialog");
 document.querySelectorAll("[data-motivation]").forEach((button) => {
   button.addEventListener("click", () => {
-    const records = JSON.parse(localStorage.getItem("sakuraRecords") || "{}");
+    const records = JSON.parse(localStorage.getItem("sakuraTestRecords") || "{}");
     const today = getToday();
     if (records[today]) {
       records[today].nextDayMotivation = Number(button.dataset.motivation);
       records[today].motivationAnsweredAt = new Date().toISOString();
-      localStorage.setItem("sakuraRecords", JSON.stringify(records));
+      localStorage.setItem("sakuraTestRecords", JSON.stringify(records));
       saveStatus.textContent = "🌸 学習記録とアンケートを保存しました！";
     }
     motivationDialog.close();
@@ -249,11 +249,11 @@ let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
 function showSakuraRoad() {
   const road = document.getElementById("sakuraRoad");
   const monthTitle = document.getElementById("monthTitle");
-  const records = JSON.parse(localStorage.getItem("sakuraRecords") || "{}");
+  const records = JSON.parse(localStorage.getItem("sakuraTestRecords") || "{}");
   const year = calendarMonth.getFullYear();
   const month = calendarMonth.getMonth() + 1;
   const taskStore = getTaskStore();
-  const notes = JSON.parse(localStorage.getItem("sakuraEditDraftNotes") || "{}");
+  const notes = JSON.parse(localStorage.getItem("sakuraTestEditDraftNotes") || "{}");
   const daysInMonth = new Date(year, month, 0).getDate();
   const firstWeekday = new Date(year, month - 1, 1).getDay();
 
@@ -350,7 +350,7 @@ function getEditingTasks() {
   if (!editingDate) return [];
   const store = getTaskStore();
   if (Array.isArray(store[editingDate])) return store[editingDate];
-  const records = JSON.parse(localStorage.getItem("sakuraRecords") || "{}");
+  const records = JSON.parse(localStorage.getItem("sakuraTestRecords") || "{}");
   const record = records[editingDate];
   if (Array.isArray(record?.tasks)) return record.tasks.map((t, i) => ({
     id: t.id || `restored-${i}`, text: t.text, done: !!t.done, minimum: !!t.minimum
@@ -362,7 +362,7 @@ function persistEditingTasks(tasks) {
   if (!editingDate) return;
   const store = getTaskStore();
   store[editingDate] = tasks;
-  localStorage.setItem("sakuraTasks", JSON.stringify(store));
+  localStorage.setItem("sakuraTestTasks", JSON.stringify(store));
   editDraftStatus.textContent = "入力途中の内容を自動保存しました。";
   renderEditingTasks();
 }
@@ -428,12 +428,12 @@ function openEditForm(date) {
     return;
   }
 
-  const records = JSON.parse(localStorage.getItem("sakuraRecords") || "{}");
+  const records = JSON.parse(localStorage.getItem("sakuraTestRecords") || "{}");
 
   const record = records[date];
 
   editingDate = date;
-  const notes = JSON.parse(localStorage.getItem("sakuraEditDraftNotes") || "{}");
+  const notes = JSON.parse(localStorage.getItem("sakuraTestEditDraftNotes") || "{}");
    editGoal.value = Object.hasOwn(notes, date) ? notes[date] : (record ? record.goal : "");
   selectEditRating(record ? normalizeRating(record.rating) : null);
 
@@ -455,9 +455,9 @@ editButtons.forEach((button) => {
 // 保存
 editGoal.addEventListener("input", () => {
   if (!editingDate) return;
-  const notes = JSON.parse(localStorage.getItem("sakuraEditDraftNotes") || "{}");
+  const notes = JSON.parse(localStorage.getItem("sakuraTestEditDraftNotes") || "{}");
   notes[editingDate] = editGoal.value;
-  localStorage.setItem("sakuraEditDraftNotes", JSON.stringify(notes));
+  localStorage.setItem("sakuraTestEditDraftNotes", JSON.stringify(notes));
   editDraftStatus.textContent = "メモを自動保存しました。";
 });
 
@@ -471,7 +471,7 @@ document.getElementById("saveEdit").addEventListener("click", () => {
     return;
   }
 
-  const records = JSON.parse(localStorage.getItem("sakuraRecords") || "{}");
+  const records = JSON.parse(localStorage.getItem("sakuraTestRecords") || "{}");
 
   const tasks = getEditingTasks();
   const minimum = tasks.find(t => t.minimum);
@@ -493,11 +493,11 @@ document.getElementById("saveEdit").addEventListener("click", () => {
     } : {})
   };
 
-  localStorage.setItem("sakuraRecords", JSON.stringify(records));
+  localStorage.setItem("sakuraTestRecords", JSON.stringify(records));
 
-  const notes = JSON.parse(localStorage.getItem("sakuraEditDraftNotes") || "{}");
+  const notes = JSON.parse(localStorage.getItem("sakuraTestEditDraftNotes") || "{}");
   delete notes[editingDate];
-  localStorage.setItem("sakuraEditDraftNotes", JSON.stringify(notes));
+  localStorage.setItem("sakuraTestEditDraftNotes", JSON.stringify(notes));
   editStatus.textContent = "🌸 記録を保存しました！";
   showSakuraRoad();
   updateStreak();
@@ -526,7 +526,7 @@ function formatDate(date) {
 }
 
 function updateStreak() {
-  const records = JSON.parse(localStorage.getItem("sakuraRecords") || "{}");
+  const records = JSON.parse(localStorage.getItem("sakuraTestRecords") || "{}");
 
   const date = new Date();
   const today = formatDate(date);
@@ -568,7 +568,7 @@ const deleteEditButton = document.getElementById("deleteEdit");
 deleteEditButton.addEventListener("click", () => {
   if (!editingDate) return;
 
-  const records = JSON.parse(localStorage.getItem("sakuraRecords") || "{}");
+  const records = JSON.parse(localStorage.getItem("sakuraTestRecords") || "{}");
 
   // 記録がない日は削除しない
   if (!records[editingDate]) {
@@ -585,13 +585,13 @@ deleteEditButton.addEventListener("click", () => {
   delete records[editingDate];
   const taskStore = getTaskStore();
   delete taskStore[editingDate];
-  localStorage.setItem("sakuraTasks", JSON.stringify(taskStore));
-  const notes = JSON.parse(localStorage.getItem("sakuraEditDraftNotes") || "{}");
+  localStorage.setItem("sakuraTestTasks", JSON.stringify(taskStore));
+  const notes = JSON.parse(localStorage.getItem("sakuraTestEditDraftNotes") || "{}");
   delete notes[editingDate];
-  localStorage.setItem("sakuraEditDraftNotes", JSON.stringify(notes));
+  localStorage.setItem("sakuraTestEditDraftNotes", JSON.stringify(notes));
 
   // 保存データを更新
-  localStorage.setItem("sakuraRecords", JSON.stringify(records));
+  localStorage.setItem("sakuraTestRecords", JSON.stringify(records));
 
   // 編集画面を閉じる
   editForm.style.display = "none";
@@ -609,7 +609,7 @@ deleteEditButton.addEventListener("click", () => {
 // ===== 学習記録のCSV出力 =====
 
 document.getElementById("exportCSV").addEventListener("click", () => {
-  const records = JSON.parse(localStorage.getItem("sakuraRecords") || "{}");
+  const records = JSON.parse(localStorage.getItem("sakuraTestRecords") || "{}");
 
   const dates = Object.keys(records).sort();
 
@@ -685,7 +685,7 @@ const goalSaveStatus = document.getElementById("goalSaveStatus");
 
 // 保存済みの目標を読み込む
 function loadGoals() {
-  const goals = JSON.parse(localStorage.getItem("sakuraGoals") || "{}");
+  const goals = JSON.parse(localStorage.getItem("sakuraTestGoals") || "{}");
 
   monthlyGoalInput.value = goals.monthlyGoal || "";
   minimumTaskInput.value = goals.minimumTask || "";
@@ -721,7 +721,7 @@ document.getElementById("saveGoals").addEventListener("click", () => {
     savedAt: new Date().toISOString(),
   };
 
-  localStorage.setItem("sakuraGoals", JSON.stringify(goals));
+  localStorage.setItem("sakuraTestGoals", JSON.stringify(goals));
 
   goalSaveStatus.textContent =
     "🌸 目標を保存しました！明日以降の最低タスクに反映されます。";
@@ -738,14 +738,14 @@ const newTaskInput = document.getElementById("newTask");
 const taskStatus = document.getElementById("taskStatus");
 
 function getTaskStore() {
-  return JSON.parse(localStorage.getItem("sakuraTasks") || "{}");
+  return JSON.parse(localStorage.getItem("sakuraTestTasks") || "{}");
 }
 
 function getTodayTasks() {
   const store = getTaskStore();
   const today = getToday();
   if (!store[today]) {
-    const settings = JSON.parse(localStorage.getItem("sakuraGoals") || "{}");
+    const settings = JSON.parse(localStorage.getItem("sakuraTestGoals") || "{}");
     if (!settings.minimumTask) return [];
     store[today] = [
       {
@@ -756,7 +756,7 @@ function getTodayTasks() {
         addedAt: new Date().toISOString(),
       },
     ];
-    localStorage.setItem("sakuraTasks", JSON.stringify(store));
+    localStorage.setItem("sakuraTestTasks", JSON.stringify(store));
   }
   return store[today];
 }
@@ -764,7 +764,7 @@ function getTodayTasks() {
 function saveTodayTasks(tasks) {
   const store = getTaskStore();
   store[getToday()] = tasks;
-  localStorage.setItem("sakuraTasks", JSON.stringify(store));
+  localStorage.setItem("sakuraTestTasks", JSON.stringify(store));
 }
 
 function getTodayTaskSummary() {
